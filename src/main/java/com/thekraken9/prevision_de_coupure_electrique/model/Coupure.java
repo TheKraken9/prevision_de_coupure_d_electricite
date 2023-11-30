@@ -1,19 +1,20 @@
 package com.thekraken9.prevision_de_coupure_electrique.model;
 
+import java.sql.Date;
 import java.sql.Time;
 
 public class Coupure {
     private int id;
-    private int id_historique;
+    private Date date;
     private int id_secteur;
     private Time heure;
 
     public Coupure() {
     }
 
-    public Coupure(int id, int id_historique, int id_secteur, Time heure) {
+    public Coupure(int id, Date date, int id_secteur, Time heure) {
         this.id = id;
-        this.id_historique = id_historique;
+        this.date = date;
         this.id_secteur = id_secteur;
         this.heure = heure;
     }
@@ -26,12 +27,12 @@ public class Coupure {
         this.id = id;
     }
 
-    public int getId_historique() {
-        return id_historique;
+    public Date getDate() {
+        return date;
     }
 
-    public void setId_historique(int id_historique) {
-        this.id_historique = id_historique;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public int getId_secteur() {
