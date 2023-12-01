@@ -1,7 +1,11 @@
 package com.thekraken9.prevision_de_coupure_electrique.model;
 
+import com.thekraken9.prevision_de_coupure_electrique.connecting.Connecting;
+
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
+import java.util.ArrayList;
 
 public class Historique {
     private int id;
@@ -59,5 +63,83 @@ public class Historique {
 
     public void setNombre_etudiant(int nombre_etudiant) {
         this.nombre_etudiant = nombre_etudiant;
+    }
+
+    public ArrayList<Historique> getNombreEtudiant(Connection connection) throws Exception {
+        if (connection == null)
+            connection = Connecting.getConnection("postgres");
+
+        ArrayList<Historique> historiques = new ArrayList<>();
+        ArrayList<Date> dates = new ArrayList<>();
+        dates = this.getDatesDeMemeJour();
+
+        for (Date date : dates) {
+            Historique historique = new Historique();
+            historique = this.getHistoriqueByDate(connection, date);
+            historiques.add(historique);
+        }
+        return historiques;
+    }
+
+    public Historique getHistoriqueByDate(Connection connection, Date date) throws Exception {
+        boolean isConnection = false;
+        if (connection == null) {
+            isConnection = true;
+            connection = Connecting.getConnection("postgres");
+        }
+
+        Historique historique = new Historique();
+
+        String query = "SELECT * FROM historique WHERE date_hist = ?";
+        java.sql.PreparedStatement preparedStatement = connection.prepareStatement(query);
+        try{
+            preparedStatement.setDate(1, date);
+            //System.out.println(date);
+            java.sql.ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                historique.setId(resultSet.getInt("id"));
+                historique.setDate(resultSet.getDate("date_hist"));
+                historique.setHeure(resultSet.getTime("heure_hist"));
+                historique.setId_salle(resultSet.getInt("id_salle"));
+                historique.setNombre_etudiant(resultSet.getInt("nombre_personne"));
+                //System.out.println(historique.getDate());
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        finally {
+            if(isConnection) {
+                preparedStatement.close();
+                connection.close();
+            }
+        }
+        return historique;
+    }
+
+    public ArrayList<Date> getDatesDeMemeJour() throws Exception{
+        ArrayList<Date> dates = new ArrayList<>();
+        Date datePrecedente = this.getDate();
+        boolean isSameDay = true;
+        try{
+            while (isSameDay) {
+                datePrecedente = Date.valueOf(datePrecedente.toLocalDate().minusDays(7));
+                System.out.println(datePrecedente);
+                if(this.getHistoriqueByDate(null, datePrecedente).getHeure() == null)
+                    isSameDay = false;
+                else
+                    dates.add(datePrecedente);
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        return dates;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Historique historique = new Historique();
+        historique.setDate(Date.valueOf("2023-11-02"));
+        //System.out.println(historique.getDatesDeMemeJour());
+        //System.out.println(historique.getHistoriqueByDate(null, Date.valueOf("2023-10-05")).getHeure());
+        System.out.println(historique.getNombreEtudiant(null));
     }
 }
