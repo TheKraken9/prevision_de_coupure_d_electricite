@@ -30,6 +30,7 @@ create table salle_par_secteur(
     id_salle int references salle(id) not null
 );
 drop table salle_par_secteur;
+select s.id_secteur,sum(nombre_personne),date_hist from historique join salle_par_secteur s on s.id_salle=historique.id_salle group by s.id_secteur, date_hist;
 select * from salle_par_secteur s join secteur sec on sec.id=s.id_secteur join energie_par_secteur en on en.id_secteur=s.id_secteur;
 select secteur.id as id, nom, id_salle, nom_salle,capacite from secteur join salle on secteur.id_salle=salle.id;
 insert into salle_par_secteur(id_secteur,id_salle) values(1,1);

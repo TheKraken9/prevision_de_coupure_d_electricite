@@ -2,19 +2,20 @@ package com.thekraken9.prevision_de_coupure_electrique.model;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalTime;
 
 public class ConsommationExtra {
     private int id;
     private int id_salle;
     private int id_materiel;
     private Date date;
-    private Time heure_debut;
-    private Time heure_fin;
+    private LocalTime heure_debut;
+    private LocalTime heure_fin;
 
     public ConsommationExtra() {
     }
 
-    public ConsommationExtra(int id, int id_salle, int id_materiel, Date date, Time heure_debut, Time heure_fin) {
+    public ConsommationExtra(int id, int id_salle, int id_materiel, Date date, LocalTime heure_debut, LocalTime heure_fin) {
         this.id = id;
         this.id_salle = id_salle;
         this.id_materiel = id_materiel;
@@ -55,19 +56,19 @@ public class ConsommationExtra {
         this.date = date;
     }
 
-    public Time getHeure_debut() {
+    public LocalTime getHeure_debut() {
         return heure_debut;
     }
 
-    public void setHeure_debut(Time heure_debut) {
+    public void setHeure_debut(LocalTime heure_debut) {
         this.heure_debut = heure_debut;
     }
 
-    public Time getHeure_fin() {
-        return heure_fin;
+    public void setHeure_fin(LocalTime heure_fin) {
+        this.heure_fin = heure_fin;
     }
 
-    public void setHeure_fin(Time heure_fin) {
-        this.heure_fin = heure_fin;
+    public LocalTime getHeure_fin() {
+        return heure_fin;
     }
 }

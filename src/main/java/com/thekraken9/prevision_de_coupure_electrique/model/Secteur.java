@@ -14,6 +14,9 @@ public class Secteur {
     private int nombre;
     private String nom_materiel;
     private double puissance;
+    private double energieSolaire;
+    private double energieBatterie;
+    private double consommation_par_etudiant;
 
     public Secteur() {
     }
@@ -78,6 +81,30 @@ public class Secteur {
 
     public void setPuissance(double puissance) {
         this.puissance = puissance;
+    }
+
+    public double getEnergieSolaire() {
+        return energieSolaire;
+    }
+
+    public void setEnergieSolaire(double energieSolaire) {
+        this.energieSolaire = energieSolaire;
+    }
+
+    public double getEnergieBatterie() {
+        return energieBatterie;
+    }
+
+    public void setEnergieBatterie(double energieBatterie) {
+        this.energieBatterie = energieBatterie;
+    }
+
+    public double getConsommation_par_etudiant() {
+        return consommation_par_etudiant;
+    }
+
+    public void setConsommation_par_etudiant(double consommation_par_etudiant) {
+        this.consommation_par_etudiant = consommation_par_etudiant;
     }
 
     public ArrayList<Secteur> getAllSecteur(Connection connection) throws Exception {
@@ -189,6 +216,7 @@ public class Secteur {
             energieSolaire = energiesSolaires.getNombre() * energiesSolaires.getPuissance();
             energieBatterie = energiesBatteries.getNombre() * energiesBatteries.getPuissance();
             System.out.println("Secteur: " + secteur.getNom() + " Energie solaire: " + energieSolaire + " Energie batterie: " + energieBatterie);
+
         }
         try{
 

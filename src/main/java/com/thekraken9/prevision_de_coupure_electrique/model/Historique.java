@@ -5,19 +5,20 @@ import com.thekraken9.prevision_de_coupure_electrique.connecting.Connecting;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class Historique {
     private int id;
     private int id_salle;
     private Date date;
-    private Time heure;
+    private LocalTime heure;
     private int nombre_etudiant;
 
     public Historique() {
     }
 
-    public Historique(int id, int id_salle, Date date, Time heure, int nombre_etudiant) {
+    public Historique(int id, int id_salle, Date date, LocalTime heure, int nombre_etudiant) {
         this.id = id;
         this.id_salle = id_salle;
         this.date = date;
@@ -49,11 +50,11 @@ public class Historique {
         this.date = date;
     }
 
-    public Time getHeure() {
+    public LocalTime getHeure() {
         return heure;
     }
 
-    public void setHeure(Time heure) {
+    public void setHeure(LocalTime heure) {
         this.heure = heure;
     }
 
@@ -81,6 +82,37 @@ public class Historique {
         return historiques;
     }
 
+    public ArrayList<Historique> getNombreEtudiantParDate(Connection connection, int id_sect) throws Exception {
+        boolean isConnection = false;
+        if (connection == null) {
+            isConnection = true;
+            connection = Connecting.getConnection("postgres");
+        }
+        ArrayList<Historique> historiques = new ArrayList<>();
+        String query = "select s.id_secteur,sum(nombre_personne),heure_hist from historique join salle_par_secteur s on s.id_salle=historique.id_salle where date_hist= ? and id_secteur= ? group by s.id_secteur,heure_hist";
+        try{
+            java.sql.PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setDate(1, this.getDate());
+            preparedStatement.setInt(2, id_sect);
+            java.sql.ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Historique historique = new Historique();
+                historique.setId_salle(resultSet.getInt("id_secteur"));
+                historique.setNombre_etudiant(resultSet.getInt("sum"));
+                historique.setHeure(resultSet.getTime("heure_hist").toLocalTime());
+                historiques.add(historique);
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        finally {
+            if(isConnection) {
+                connection.close();
+            }
+        }
+        return historiques;
+    }
+
     public Historique getHistoriqueByDate(Connection connection, Date date) throws Exception {
         boolean isConnection = false;
         if (connection == null) {
@@ -99,7 +131,7 @@ public class Historique {
             while (resultSet.next()) {
                 historique.setId(resultSet.getInt("id"));
                 historique.setDate(resultSet.getDate("date_hist"));
-                historique.setHeure(resultSet.getTime("heure_hist"));
+                historique.setHeure(resultSet.getTime("heure_hist").toLocalTime());
                 historique.setId_salle(resultSet.getInt("id_salle"));
                 historique.setNombre_etudiant(resultSet.getInt("nombre_personne"));
                 //System.out.println(historique.getDate());

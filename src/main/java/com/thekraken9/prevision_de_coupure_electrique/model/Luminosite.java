@@ -5,18 +5,19 @@ import com.thekraken9.prevision_de_coupure_electrique.connecting.Connecting;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class Luminosite {
     private int id;
     private Date date;
-    private Time heure;
+    private LocalTime heure;
     private int etat;
 
     public Luminosite() {
     }
 
-    public Luminosite(int id, Date date, Time heure, int etat) {
+    public Luminosite(int id, Date date, LocalTime heure, int etat) {
         this.id = id;
         this.date = date;
         this.heure = heure;
@@ -39,11 +40,11 @@ public class Luminosite {
         this.date = date;
     }
 
-    public Time getHeure() {
+    public LocalTime getHeure() {
         return heure;
     }
 
-    public void setHeure(Time heure) {
+    public void setHeure(LocalTime heure) {
         this.heure = heure;
     }
 
@@ -72,7 +73,7 @@ public class Luminosite {
                 Luminosite luminosite = new Luminosite();
                 luminosite.setId(resultSet.getInt("id"));
                 luminosite.setDate(resultSet.getDate("date_lum"));
-                luminosite.setHeure(resultSet.getTime("heure_lum"));
+                luminosite.setHeure(resultSet.getTime("heure_lum").toLocalTime());
                 luminosite.setEtat(resultSet.getInt("etat"));
                 luminosites.add(luminosite);
             }
