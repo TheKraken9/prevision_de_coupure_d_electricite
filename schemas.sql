@@ -69,7 +69,7 @@ create table luminosite(
     id serial primary key,
     date_lum date not null,
     heure_lum time not null,
-    etat smallint not null
+    etat double precision not null
 );
 insert into luminosite(date_lum,heure_lum,etat) values('2023-10-05','08:00:00',5);
 insert into luminosite(date_lum,heure_lum,etat) values('2023-10-05','09:00:00',6);

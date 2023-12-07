@@ -5,9 +5,12 @@
     <title>Previsions de Coupure</title>
 </head>
 <body>
-<h1><%= "Hello World!" %>
+<h1>Prevision de coupure
 </h1>
 <br/>
-<a href="hello-servlet">Hello Servlet</a>
+<form method="post" action="hello">
+    <input type="date" name="date">
+    <input type="submit" value="Voir la prevision">
+</form>
 </body>
 </html>

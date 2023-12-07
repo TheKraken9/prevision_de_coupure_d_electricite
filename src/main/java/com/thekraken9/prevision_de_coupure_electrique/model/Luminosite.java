@@ -12,12 +12,12 @@ public class Luminosite {
     private int id;
     private Date date;
     private LocalTime heure;
-    private int etat;
+    private double etat;
 
     public Luminosite() {
     }
 
-    public Luminosite(int id, Date date, LocalTime heure, int etat) {
+    public Luminosite(int id, Date date, LocalTime heure, double etat) {
         this.id = id;
         this.date = date;
         this.heure = heure;
@@ -48,11 +48,11 @@ public class Luminosite {
         this.heure = heure;
     }
 
-    public int getEtat() {
+    public double getEtat() {
         return etat;
     }
 
-    public void setEtat(int etat) {
+    public void setEtat(double etat) {
         this.etat = etat;
     }
 
@@ -64,7 +64,7 @@ public class Luminosite {
         }
 
         ArrayList<Luminosite> luminosites = new ArrayList<>();
-        String query = "SELECT * FROM luminosite WHERE date_lum = ?";
+        String query = "SELECT * FROM luminosite WHERE date_lum = ? ORDER BY heure_lum ASC";
         java.sql.PreparedStatement preparedStatement = connection.prepareStatement(query);
         preparedStatement.setDate(1, this.date);
         try {
@@ -74,7 +74,7 @@ public class Luminosite {
                 luminosite.setId(resultSet.getInt("id"));
                 luminosite.setDate(resultSet.getDate("date_lum"));
                 luminosite.setHeure(resultSet.getTime("heure_lum").toLocalTime());
-                luminosite.setEtat(resultSet.getInt("etat"));
+                luminosite.setEtat(resultSet.getDouble("etat"));
                 luminosites.add(luminosite);
             }
         } catch (Exception e) {

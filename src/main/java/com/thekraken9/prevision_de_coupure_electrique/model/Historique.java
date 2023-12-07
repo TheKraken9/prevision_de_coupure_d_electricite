@@ -155,7 +155,7 @@ public class Historique {
         try{
             while (isSameDay) {
                 datePrecedente = Date.valueOf(datePrecedente.toLocalDate().minusDays(7));
-                System.out.println(datePrecedente);
+                //System.out.println("date precedente :" + datePrecedente);
                 if(this.getHistoriqueByDate(null, datePrecedente).getHeure() == null)
                     isSameDay = false;
                 else
@@ -163,6 +163,31 @@ public class Historique {
             }
         }catch (Exception e){
             throw e;
+        }
+        return dates;
+    }
+
+    public ArrayList<Date> getAllDates(Connection connection) throws Exception {
+        boolean isConnectionProvided = false;
+        if(connection == null) {
+            isConnectionProvided = true;
+            connection = new Connecting().getConnection("postgres");
+        }
+        String query = "select distinct date_hist from historique";
+        ArrayList<Date> dates = new ArrayList<>();
+        try{
+            java.sql.Statement statement = connection.createStatement();
+            java.sql.ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()) {
+                dates.add(resultSet.getDate("date_hist"));
+                //System.out.println("date2 :" + resultSet.getDate("date_hist"));
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        finally {
+            if(isConnectionProvided)
+                connection.close();
         }
         return dates;
     }
