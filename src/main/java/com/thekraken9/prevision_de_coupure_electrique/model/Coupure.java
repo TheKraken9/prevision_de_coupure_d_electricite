@@ -160,6 +160,7 @@ public class Coupure {
         double consommation_bas = 0;
         double consommation_haut = 0;
         double consommation_provisoire = 0;
+        double conso_rollback = 0;
         int nombre_etudiant_matin = 0;
         int nombre_etudiant_midi = 0;
         int id_secteur = 0;
@@ -174,10 +175,21 @@ public class Coupure {
             dates = historique.getAllDates(connection);
             for (Date date1 : dates) {
                 for (Secteur secteur : secteurs) {
+
+                    Coupure coupure = new Coupure();
+                    coupure.setDate(date1);
+                    historique.setDate(date1);
+                    //System.out.println("date: " + date1);
+                    coupure.setId_secteur(secteur.getId());
+                    coupure = coupure.getCoupureParDateParSecteur(connection);
+                    heure_coupure = coupure.getHeure();
+
                     consommation_bas = 0;
-                    consommation_haut = 600;
+                    consommation_haut = 120;
                     consommation_provisoire = 60;
+                    conso_rollback = 0;
                     difference_de_minutes = (long) Math.abs(heure_coupure.until(LocalTime.of(0,0,0), java.time.temporal.ChronoUnit.MINUTES));
+                    System.out.println("difference de minutes: " + difference_de_minutes);
                     meilleur_heure = heure_a_ajuster;
                     meilleur_consommation = consommation_provisoire;
                     System.out.println("secteur: " + secteur.getNom() + " date: " + date1);
@@ -190,15 +202,12 @@ public class Coupure {
                         nombre_etudiant_midi = historiques.get(0).getNombre_etudiant();
                     }
                     System.out.println("nombre etudiant matin: " + nombre_etudiant_matin + " nombre etudiant midi: " + nombre_etudiant_midi);
-                    Coupure coupure = new Coupure();
-                    coupure.setDate(date1);
-                    //System.out.println("date: " + date1);
-                    coupure.setId_secteur(secteur.getId());
-                    coupure = coupure.getCoupureParDateParSecteur(connection);
-                    heure_coupure = coupure.getHeure();
+
                     //System.out.println("heure coupure: " + heure_coupure);
                     while (heure_a_ajuster != heure_coupure){
+                        consommation_provisoire = (consommation_bas+consommation_haut)/2;
                         heure_a_ajuster  = coupure.prevoirCoupure(connection, date1, secteur, consommation_provisoire, nombre_etudiant_matin, nombre_etudiant_midi);
+                        System.out.println("consommation = " + consommation_provisoire);
                         System.out.println("heure a ajuster: " + heure_a_ajuster);
                         System.out.println("heure coupure: " + heure_coupure);
                         if(heure_a_ajuster.equals(heure_coupure)){
@@ -212,24 +221,30 @@ public class Coupure {
                         if(heure_a_ajuster.equals(heure_null)){
                             System.out.println("consommation provisoire2: " + consommation_provisoire);
                             consommation_bas = consommation_provisoire;
-                            consommation_provisoire = (consommation_bas+consommation_haut)/2;
+                            //consommation_provisoire = (consommation_bas+consommation_haut)/2;
                             continue;
                         }else if(heure_a_ajuster.isBefore(heure_coupure)){
                             System.out.println("consommation provisoire1: " + consommation_provisoire);
+                            System.out.println("consommation provisoire1: " + consommation_provisoire);
                             consommation_haut = consommation_provisoire;
-                            consommation_provisoire = (consommation_bas+consommation_haut)/2;
+                            //conso_rollback = consommation_provisoire;
+                            //consommation_provisoire = (consommation_bas+consommation_haut)/2;
                         }else{
                             System.out.println("consommation provisoire3: " + consommation_provisoire);
                             consommation_bas = consommation_provisoire;
-                            consommation_provisoire = (consommation_bas+consommation_haut)/2;
+                            //conso_rollback = consommation_provisoire;
+                            //consommation_provisoire = (consommation_bas+consommation_haut)/2;
                         }
                         System.out.println("---------------------------------------------");
 
                         difference_de_minutes_temp = Math.abs(heure_coupure.until(heure_a_ajuster, java.time.temporal.ChronoUnit.MINUTES));
+                        if(meilleur_heure == heure_a_ajuster){
+                            continue;
+                        }
                         if(difference_de_minutes_temp < difference_de_minutes){
                             difference_de_minutes = difference_de_minutes_temp;
                             meilleur_heure = heure_a_ajuster;
-                            meilleur_consommation = consommation_provisoire;
+                            meilleur_consommation = (consommation_provisoire);
                         }
                     }
                     System.out.println("date: " + date1 + " secteur: " + secteur.getNom() + " heure coupure: " + heure_coupure);
@@ -311,13 +326,14 @@ public class Coupure {
                             break;
                         }
                         if(heure_a_ajuster.equals(heure_null)){
-                            consommation_provisoire += 0.1;
+                            consommation_provisoire += 1;
                             continue;
-                        }else if(heure_a_ajuster.isBefore(heure_coupure)){
-                            consommation_provisoire -= 0.1;
+                        }
+                        if(heure_a_ajuster.isBefore(heure_coupure)){
+                            consommation_provisoire -= 1;
                         }else{
                             System.out.println("ato");
-                            consommation_provisoire += 0.1;
+                            consommation_provisoire += 1;
                         }
                         difference_de_minutes_temp = Math.abs(heure_coupure.until(heure_a_ajuster, java.time.temporal.ChronoUnit.MINUTES));
                         if(difference_de_minutes_temp < difference_de_minutes){
@@ -363,9 +379,11 @@ public class Coupure {
         Historique historique = new Historique();
         historique.setDate(date);
         dates = historique.getDatesDeMemeJour();
+        //System.out.println("date taille ----------------------" + dates.size());
         int nombre_etudiant_matin = 0;
         int nombre_etudiant_midi = 0;
         for (Date date1 : dates) {
+            //System.out.println("datebeeeeee :" + date1);
             for (Secteur secteur : secteurs) {
                 ArrayList<Historique> historiques = new ArrayList<>();
                 historique.setDate(date1);
@@ -382,7 +400,7 @@ public class Coupure {
                 sect.setNom(secteur.getNom());
                 sect.setEnergieSolaire(nombre_etudiant_matin);
                 sect.setEnergieBatterie(nombre_etudiant_midi);
-                //System.out.println("Date : " + date1 + " secteur: " + secteur.getNom() + " nombre etudiant matin: " + nombre_etudiant_matin + " nombre etudiant midi: " + nombre_etudiant_midi);
+                //System.out.println("Dateuuuuhhhhhhhh : " + date1 + " secteur: " + secteur.getNom() + " nombre etudiant matin: " + nombre_etudiant_matin + " nombre etudiant midi: " + nombre_etudiant_midi);
                 secteurs1.add(sect);
             }
         }
@@ -456,6 +474,10 @@ public class Coupure {
                     System.out.println("-----------------------------------------------");*/
                 }
             }else {
+                double qu_on_n_utilise_pas_dans_le_solaire = energie_solaire_disponible - consommation_totale;
+                energie_batterie_disponible += qu_on_n_utilise_pas_dans_le_solaire;
+                if(energie_batterie_disponible > energie_batterie)
+                    energie_batterie_disponible = energie_batterie;
                 //System.out.println("solaire mbola ampy");
                 /*System.out.println("luminosite: " + luminosite_par_heure);
                 System.out.println("Secteur: " + secteur.getNom() + " Energie solaire: " + energie_solaire_disponible + " Energie batterie: " + energie_batterie_disponible);
@@ -549,6 +571,11 @@ public class Coupure {
                     System.out.println("-----------------------------------------------");*/
                 }
             }else {
+                double qu_on_n_utilise_pas_dans_le_solaire = energie_solaire_disponible - consommation_totale;
+                energie_batterie_disponible += qu_on_n_utilise_pas_dans_le_solaire;
+                if(energie_batterie_disponible > energie_batterie)
+                    energie_batterie_disponible = energie_batterie;
+
                 System.out.println("date" + date + " heure :" + lum.getHeure() + " luminosite: " + luminosite_par_heure + " secteur: " + secteur.getNom() + " Energie solaire: " + energie_solaire_disponible + " Energie batterie: " + energie_batterie_disponible + " consommation totale: " + consommation_totale + " a prendre dans la batterie" );
                 detailsConsos.add(new DetailsConso(date, lum.getHeure(), luminosite_par_heure, secteur.getId(), energie_solaire_disponible, energie_batterie_disponible, consommation_totale, 0.0, false, energie_solaire_disponible, energie_batterie_disponible));
 
@@ -565,7 +592,7 @@ public class Coupure {
 
 
 
-    public LocalTime prevoirCoupureTest(Date date, Secteur secteur, double consommation_par_etudiant, int nombre_etudiant_matin, int nombre_etudiant_midi) throws Exception{
+    /*public LocalTime prevoirCoupureTest(Date date, Secteur secteur, double consommation_par_etudiant, int nombre_etudiant_matin, int nombre_etudiant_midi) throws Exception{
         Luminosite luminosite = new Luminosite();
         luminosite.setDate(date);
         //ArrayList<Secteur> secteurs = new Secteur().getAllSecteur(null);
@@ -637,6 +664,10 @@ public class Coupure {
                     System.out.println("-----------------------------------------------");
                 }
             }else {
+                double qu_on_n_utilise_pas_dans_le_solaire = energie_solaire_disponible - consommation_totale;
+                energie_batterie_disponible += qu_on_n_utilise_pas_dans_le_solaire;
+                if(energie_batterie_disponible > energie_batterie)
+                    energie_batterie_disponible = energie_batterie;
                 System.out.println("heure: " + lum.getHeure());
                 System.out.println("luminosite: " + luminosite_par_heure);
                 System.out.println("Secteur: " + secteur.getNom() + " Energie solaire: " + energie_solaire_disponible + " Energie batterie: " + energie_batterie_disponible);
@@ -651,7 +682,7 @@ public class Coupure {
         }
         //System.out.println(" ----------------------------->>>>>>> coupure dans le secteur: " + secteur.getNom() + " a " + heure_exacte);
         return heure_exacte;
-    }
+    }*/
 
     public ArrayList<Secteur> moyenneParSecteur(Connection connection, Date date) throws Exception {
         boolean isConnectionProvided = false;
@@ -664,6 +695,7 @@ public class Coupure {
         ArrayList<Secteur> all_secteur = new Secteur().getAllSecteur(connection);
         secteurs = devinerLaConsommationParEtudiantParLaMethodeDichotomie(connection, date);
         secteurs1 = nombreEtudiantParSecteur(connection, date);
+        //System.out.println("secteurs----------------------------------------------: " + secteurs.size() + " secteurs1: " + secteurs1.size());
         ArrayList<Secteur> secteurs_moyenne = new ArrayList<>();
         for (Secteur secteur : all_secteur) {
             int id_secteur = secteur.getId();
@@ -689,59 +721,16 @@ public class Coupure {
             s.setId(id_secteur);
             s.setNom(secteur.getNom());
             s.setConsommation_par_etudiant(consommation_moyenne / i);
-            s.setEnergieSolaire(nombre_etudiant_moyenne_matin / j);
-            s.setEnergieBatterie(nombre_etudiant_moyenne_midi / j);
+            //s.setEnergieSolaire((int)Math.round(nombre_etudiant_moyenne_matin / j));
+            s.setEnergieSolaire((nombre_etudiant_moyenne_matin / j));
+            //s.setEnergieBatterie((int)Math.round(nombre_etudiant_moyenne_midi / j));
+            s.setEnergieBatterie((nombre_etudiant_moyenne_midi / j));
             secteurs_moyenne.add(s);
             //System.out.println("i = " + i);
-            System.out.println("secteur: " + s.getNom() + " consommation moyenne: " + s.getConsommation_par_etudiant() + " nombre etudiant matin moyen: " + s.getEnergieSolaire() + " nombre etudiant midi moyen: " + s.getEnergieBatterie());
+            //System.out.println("secteureeeeee: " + s.getNom() + " consommation moyenne: " + s.getConsommation_par_etudiant() + " nombre etudiant matin moyen: " + s.getEnergieSolaire() + " nombre etudiant midi moyen: " + s.getEnergieBatterie());
         }
         return secteurs_moyenne;
     }
-
-    /*public ArrayList<Secteur> moyenneParSecteur2(Connection connection, Date date) throws Exception {
-        boolean isConnectionProvided = false;
-        if (connection == null) {
-            isConnectionProvided = true;
-            connection = Connecting.getConnection("postgres");
-        }
-        ArrayList<Secteur> secteurs = new ArrayList<>();
-        ArrayList<Secteur> secteurs1 = new ArrayList<>();
-        ArrayList<Secteur> all_secteur = new Secteur().getAllSecteur(connection);
-        secteurs = devinerLaConsommationParEtudiantParLaMethodeIteration(connection, date);
-        secteurs1 = nombreEtudiantParSecteur(connection, date);
-        ArrayList<Secteur> secteurs_moyenne = new ArrayList<>();
-        for (Secteur secteur : all_secteur) {
-            int id_secteur = secteur.getId();
-            double consommation_moyenne = 0;
-            double nombre_etudiant_moyenne_matin = 0;
-            double nombre_etudiant_moyenne_midi = 0;
-            int i = 0;
-            int j = 0;
-            for (Secteur sec : secteurs) {
-                if (sec.getId() == id_secteur) {
-                    consommation_moyenne += sec.getConsommation_par_etudiant();
-                    i++;
-                }
-            }
-            for (Secteur sec1 : secteurs1) {
-                if (sec1.getId() == id_secteur) {
-                    nombre_etudiant_moyenne_matin += sec1.getEnergieSolaire();
-                    nombre_etudiant_moyenne_midi += sec1.getEnergieBatterie();
-                    j++;
-                }
-            }
-            Secteur s = new Secteur();
-            s.setId(id_secteur);
-            s.setNom(secteur.getNom());
-            s.setConsommation_par_etudiant(consommation_moyenne / i);
-            s.setEnergieSolaire(nombre_etudiant_moyenne_matin / j);
-            s.setEnergieBatterie(nombre_etudiant_moyenne_midi / j);
-            secteurs_moyenne.add(s);
-            //System.out.println("i = " + i);
-            System.out.println("secteur: " + s.getNom() + " consommation moyenne: " + s.getConsommation_par_etudiant() + " nombre etudiant matin moyen: " + s.getEnergieSolaire() + " nombre etudiant midi moyen: " + s.getEnergieBatterie());
-        }
-        return secteurs_moyenne;
-    }*/
 
 
     public ArrayList<Coupure> coupureParSecteur(Connection connection, Date date) throws Exception{
@@ -753,6 +742,7 @@ public class Coupure {
         ArrayList<Coupure> coupures = new ArrayList<>();
         ArrayList<Secteur> secteurs = moyenneParSecteur(connection, date);
         for (Secteur secteur : secteurs) {
+            //System.out.println("secteur: " + secteur.getNom() + " consommation moyenne: " + secteur.getConsommation_par_etudiant() + " nombre etudiant matin moyen: " + secteur.getEnergieSolaire() + " nombre etudiant midi moyen: " + secteur.getEnergieBatterie());
             Coupure coupure = new Coupure();
             coupure.setDate(date);
             coupure.setId_secteur(secteur.getId());
@@ -766,28 +756,6 @@ public class Coupure {
         return coupures;
     }
 
-    /*public ArrayList<Coupure> coupureParSecteur2(Connection connection, Date date) throws Exception{
-        boolean isConnectionProvided = false;
-        if (connection == null) {
-            isConnectionProvided = true;
-            connection = Connecting.getConnection("postgres");
-        }
-        ArrayList<Coupure> coupures = new ArrayList<>();
-        ArrayList<Secteur> secteurs = moyenneParSecteur2(connection, date);
-        for (Secteur secteur : secteurs) {
-            Coupure coupure = new Coupure();
-            coupure.setDate(date);
-            coupure.setId_secteur(secteur.getId());
-            coupure.setHeure(prevoirCoupure(connection, date, secteur, secteur.getConsommation_par_etudiant(), (int) secteur.getEnergieSolaire(), (int) secteur.getEnergieBatterie()));
-            coupure.setConsommation_par_etudiant(secteur.getConsommation_par_etudiant());
-            coupure.setNombre_etudiant_matin(secteur.getEnergieSolaire());
-            coupure.setNombre_etudiant_midi(secteur.getEnergieBatterie());
-            coupures.add(coupure);
-            System.out.println("secteur: " + secteur.getNom() + " prévu coupé à: " + coupure.getHeure());
-        }
-        return coupures;
-    }*/
-
     public static void main(String[] args) throws Exception {
         Coupure coupure = new Coupure();
         LocalTime heure = LocalTime.of(0,0,0);
@@ -796,14 +764,14 @@ public class Coupure {
         secteur.setId(1);
         secteur.setNom("secteur1");
         //coupure.getCoupureByDate(null);
-            heure = coupure.prevoirCoupureTest(Date.valueOf("2023-10-05"),secteur, 60,220,120);
+            heure = coupure.prevoirCoupure(null, Date.valueOf("2023-11-14"),secteur, 75,300,290);
             System.out.println(heure);
-        //coupure.devinerLaConsommationParEtudiantParLaMethodeDichotomie(null, Date.valueOf("2023-10-05"));
-        //coupure.devinerLaConsommationParEtudiantParLaMethodeIteration(null, Date.valueOf("2023-11-02"));
+        //coupure.devinerLaConsommationParEtudiantParLaMethodeDichotomie(null, Date.valueOf("2023-12-07"));
+        //coupure.devinerLaConsommationParEtudiantParLaMethodeIteration(null, Date.valueOf("2023-11-10"));
 
         //coupure.moyenneParSecteur(null, Date.valueOf("2023-11-02"));
 
-        //coupure.coupureParSecteur(null, Date.valueOf("2023-11-02"));
+        //coupure.coupureParSecteur(null, Date.valueOf("2023-12-27"));
             //coupure.nombreEtudiantParSecteur(null, Date.valueOf("2023-11-02"));
 
         //coupure.detailsCoupure(null, Date.valueOf("2023-10-26"), secteur, 76.647108,210,185);

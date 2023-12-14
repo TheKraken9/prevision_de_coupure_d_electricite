@@ -13,24 +13,25 @@
 <html>
 <head>
     <title>Details consommation</title>
+    <link rel="stylesheet" href="assets/bootstrap.css">
 </head>
-<body>
-<h1>Details consommation</h1>
-<table>
+<body class="container mt-5">
+<h1 style="text-align: center">Details consommation</h1>
+<table class="table table-success table-striped">
     <tr>
-        <th>Date</th>
-        <th>Secteur</th>
-        <th>Heure</th>
-        <th>Luminosite</th>
-        <th>Energie Solaire</th>
-        <th>Energie Batterie</th>
-        <th>Consommation par heure</th>
-        <th>A prendre dans la batterie</th>
-        <th>Batterie consommée</th>
+        <th scope="col">Date</th>
+        <th scope="col">Secteur</th>
+        <th scope="col">Heure</th>
+        <th scope="col">Luminosite</th>
+        <th scope="col">Energie Solaire</th>
+        <th scope="col">Energie Batterie</th>
+        <th scope="col">Consommation par heure</th>
+        <th scope="col">A prendre dans la batterie</th>
+        <th scope="col">Batterie consommée</th>
     </tr>
     <% for (DetailsConso detailsConso1 : detailsConso) { %>
     <tr>
-        <td><%= detailsConso1.getDate() %></td>
+        <th scope="row"><%= detailsConso1.getDate() %></th>
         <td><%= detailsConso1.getId_secteur() %></td>
         <td><%= detailsConso1.getHeure() %></td>
         <td><%= detailsConso1.getEtat() %></td>
@@ -41,5 +42,6 @@
         <td><%= detailsConso1.isBatterie_consommee() %></td>
     </tr>
     <% } %>
+</table>
 </body>
 </html>

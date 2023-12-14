@@ -5,6 +5,7 @@ import com.thekraken9.prevision_de_coupure_electrique.connecting.Connecting;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
@@ -151,20 +152,44 @@ public class Historique {
     public ArrayList<Date> getDatesDeMemeJour() throws Exception{
         ArrayList<Date> dates = new ArrayList<>();
         Date datePrecedente = this.getDate();
+        Date premierDate = Date.valueOf(this.getLastDate(null));
         boolean isSameDay = true;
         try{
-            while (isSameDay) {
+            while (datePrecedente.compareTo(premierDate) >= 0) {
                 datePrecedente = Date.valueOf(datePrecedente.toLocalDate().minusDays(7));
                 //System.out.println("date precedente :" + datePrecedente);
-                if(this.getHistoriqueByDate(null, datePrecedente).getHeure() == null)
-                    isSameDay = false;
-                else
+                if(this.getHistoriqueByDate(null, datePrecedente).getHeure() != null)
                     dates.add(datePrecedente);
             }
         }catch (Exception e){
             throw e;
         }
         return dates;
+    }
+
+    public LocalDate getLastDate(Connection connection) throws Exception {
+        boolean isConnectionProvided = false;
+        if(connection == null) {
+            isConnectionProvided = true;
+            connection = new Connecting().getConnection("postgres");
+        }
+        String query = "select min(date_hist) from historique";
+        LocalDate date = null;
+        try{
+            java.sql.Statement statement = connection.createStatement();
+            java.sql.ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()) {
+                date = resultSet.getDate("min").toLocalDate();
+                //System.out.println("date2 :" + resultSet.getDate("date_hist"));
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        finally {
+            if(isConnectionProvided)
+                connection.close();
+        }
+        return date;
     }
 
     public ArrayList<Date> getAllDates(Connection connection) throws Exception {
@@ -194,9 +219,9 @@ public class Historique {
 
     public static void main(String[] args) throws Exception {
         Historique historique = new Historique();
-        historique.setDate(Date.valueOf("2023-11-02"));
-        //System.out.println(historique.getDatesDeMemeJour());
+        historique.setDate(Date.valueOf("2023-12-27"));
+        System.out.println(historique.getDatesDeMemeJour());
         //System.out.println(historique.getHistoriqueByDate(null, Date.valueOf("2023-10-05")).getHeure());
-        System.out.println(historique.getNombreEtudiant(null));
+        //System.out.println(historique.getNombreEtudiant(null));
     }
 }

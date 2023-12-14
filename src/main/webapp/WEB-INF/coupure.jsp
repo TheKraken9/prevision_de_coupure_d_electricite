@@ -13,22 +13,23 @@
 <html>
 <head>
     <title>Coupures</title>
+    <link rel="stylesheet" href="assets/bootstrap.css">
 </head>
-<body>
-    <h1>Coupures</h1>
-    <table>
+<body class="container mt-5">
+    <h1 class="" style="text-align: center">Coupures</h1>
+    <table class="table table-striped">
         <tr>
-            <th>Secteur</th>
-            <th>Date</th>
-            <th>Heure</th>
-            <th>Consommation par étudiant</th>
-            <th>Nombre Etudiant matin</th>
-            <th>Nombre Etudiant midi</th>
-            <th>Actions</th>
+            <th scope="col">Secteur</th>
+            <th scope="col">Date</th>
+            <th scope="col">Heure</th>
+            <th scope="col">Consommation par étudiant</th>
+            <th scope="col">Nombre Etudiant matin</th>
+            <th scope="col">Nombre Etudiant midi</th>
+            <th scope="col">Actions</th>
         </tr>
         <% for (Coupure coupure : coupures) { %>
             <tr>
-                <td><%= coupure.getId_secteur() %></td>
+                <th scope="row"><%= coupure.getId_secteur() %></th>
                 <td><%= coupure.getDate() %></td>
                 <td><%= coupure.getHeure() %></td>
                 <td><%= coupure.getConsommation_par_etudiant() %></td>
@@ -38,5 +39,7 @@
             </tr>
         <% } %>
     </table>
+
+
 </body>
 </html>
